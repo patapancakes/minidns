@@ -52,18 +52,14 @@ func main() {
 	fmt.Println()
 
 	//// PARSING THE HOSTS FILE
-	hostsFile := flag.String("hosts", "hosts.yml", "path to hosts file")
+	hostsPath := flag.String("hosts", "hosts.yml", "path to hosts file")
 	flag.Parse()
 
-	f, err := os.Open(*hostsFile)
+	f, err := os.Open(*hostsPath)
 	if err != nil {
 		fmt.Printf("Error: failed to open hosts file: %s\n", err)
 		os.Exit(1)
 	}
-
-	// doesn't get closed until program exits
-	// this is probably fine
-	defer f.Close()
 
 	var h map[string]netip.Addr
 	err = yaml.NewDecoder(f).Decode(&h)
@@ -71,6 +67,8 @@ func main() {
 		fmt.Printf("Error: failed to decode hosts file: %s\n", err)
 		os.Exit(1)
 	}
+
+	f.Close()
 
 	for hostRegex, addr := range h {
 		re, err := regexp.Compile(hostRegex)
